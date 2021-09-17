@@ -32,7 +32,7 @@ app.use("/api", require("./routes/authRoutes"));
 const PORT = 5000;
 async function start() {
   try {
-    await mongoose.connect(config.get("mongoUri"), {
+    await mongoose.connect(config.get("mongoUrl"), {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       useCreateIndex: true,
