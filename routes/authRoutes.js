@@ -2,10 +2,24 @@ const { Router } = require("express");
 const bcrypt = require("bcryptjs");
 const config = require("config");
 const jwt = require("jsonwebtoken");
+
 const User = require("../models/User");
+const ChatUser = require("../models/ChatUser");
+const auth = require("../middleware/auth.middleware");
 const router = Router();
 const { LoginSchema } = require("../validationSchema/schema");
 const { AuthSchema } = require("../validationSchema/schema");
+
+const createName = async (userName, id = "") => {
+  const newUserName = userName;
+  userName += id;
+  const candidate = await User.findOne({ userName });
+  console.log(userName);
+  if (candidate) {
+    return createName(newUserName, Number(id + 1));
+  }
+  return userName;
+};
 
 router.post("/register", async (req, res) => {
   try {
@@ -16,17 +30,33 @@ router.post("/register", async (req, res) => {
       email: email,
       password: password,
     });
-    console.log(result);
+
     const candidate = await User.findOne({ email });
 
     if (candidate) {
       return res.status(400).json({ message: "This user already exists" });
     }
 
+    const newUserName = await createName(userName);
+
     const hashedPassword = await bcrypt.hash(password, 12);
-    const user = new User({ email, userName, password: hashedPassword });
+    const user = new User({
+      email,
+      userName: newUserName,
+      password: hashedPassword,
+    });
 
     await user.save();
+
+    const idUser = await User.findOne({ email });
+
+    const chatUser = new ChatUser({
+      email,
+      owner: idUser._id,
+      userName: newUserName,
+    });
+
+    await chatUser.save();
 
     res.status(201).json({ message: "User created" });
   } catch (e) {
@@ -62,6 +92,16 @@ router.post("/login", async (req, res) => {
     });
 
     res.json({ token, userId: user.id });
+  } catch (e) {
+    res.status(500).json({ message: "Something went wrong, please try again" });
+  }
+});
+
+router.get("/is_auth/:_id", auth, async (req, res) => {
+  try {
+    const id = req.params;
+    const data = await ChatUser.findOne({ owner: id });
+    res.json(data);
   } catch (e) {
     res.status(500).json({ message: "Something went wrong, please try again" });
   }
