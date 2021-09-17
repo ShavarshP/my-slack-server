@@ -1,4 +1,4 @@
 {
   "jwtSecret": "shavarsh is excellent",
-  "mongoUri": "mongodb+srv://shavarsh:aaash350700@cluster0.hwyjq.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+  "mongoUrl": "mongodb+srv://shavarsh:aaash350700@cluster0.hwyjq.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 }
