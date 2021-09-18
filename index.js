@@ -7,14 +7,15 @@ const app = express();
 const server = require("http").Server(app);
 
 const cors = require("cors");
+const chatIo = require("./liveServer/liveChat");
 
-// const io = require("socket.io")(server, {
-//   cors: {
-//     origin: "*",
-//     methods: ["GET", "POST"],
-//     credentials: true,
-//   },
-// });
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
 
 app.use(cors({ origin: "*" }));
 
@@ -28,6 +29,7 @@ app.use(
 );
 
 app.use("/api", require("./routes/authRoutes"));
+chatIo(io);
 
 const PORT = 5000;
 async function start() {
