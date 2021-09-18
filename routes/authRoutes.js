@@ -14,11 +14,33 @@ const createName = async (userName, id = "") => {
   const newUserName = userName;
   userName += id;
   const candidate = await User.findOne({ userName });
-  console.log(userName);
   if (candidate) {
     return createName(newUserName, Number(id + 1));
   }
   return userName;
+};
+
+const logIn = async (res, email, password) => {
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "User is not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ message: "Invalid password, please try again" });
+    }
+
+    const token = jwt.sign({ userId: user.id }, config.get("jwtSecret"), {
+      expiresIn: "21h",
+    });
+    return { token, userId: user.id };
+  } catch (error) {}
 };
 
 router.post("/register", async (req, res) => {
@@ -58,9 +80,10 @@ router.post("/register", async (req, res) => {
 
     await chatUser.save();
 
-    res.status(201).json({ message: "User created" });
+    const token = await logIn(res, email, password);
+
+    res.status(201).json({ message: "User created", ...token });
   } catch (e) {
-    console.log(e);
     res.status(500).json({ message: "Something went wrong, please try again" });
   }
 });
@@ -72,26 +95,10 @@ router.post("/login", async (req, res) => {
       email: email,
       password: password,
     });
-    console.log(result);
-    const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(400).json({ message: "User is not found" });
-    }
+    const token = await logIn(res, email, password);
 
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res
-        .status(400)
-        .json({ message: "Invalid password, please try again" });
-    }
-
-    const token = jwt.sign({ userId: user.id }, config.get("jwtSecret"), {
-      expiresIn: "21h",
-    });
-
-    res.json({ token, userId: user.id });
+    res.json({ ...token });
   } catch (e) {
     res.status(500).json({ message: "Something went wrong, please try again" });
   }
