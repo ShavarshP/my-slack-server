@@ -29,6 +29,8 @@ app.use(
 );
 
 app.use("/api", require("./routes/authRoutes"));
+app.use("/api", require("./routes/getUsersData"));
+
 chatIo(io);
 
 const PORT = 5000;

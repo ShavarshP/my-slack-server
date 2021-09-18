@@ -5,7 +5,6 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
 const ChatUser = require("../models/ChatUser");
-const auth = require("../middleware/auth.middleware");
 const router = Router();
 const { LoginSchema } = require("../validationSchema/schema");
 const { AuthSchema } = require("../validationSchema/schema");
@@ -99,16 +98,6 @@ router.post("/login", async (req, res) => {
     const token = await logIn(res, email, password);
 
     res.json({ ...token });
-  } catch (e) {
-    res.status(500).json({ message: "Something went wrong, please try again" });
-  }
-});
-
-router.get("/is_auth/:_id", auth, async (req, res) => {
-  try {
-    const id = req.params;
-    const data = await ChatUser.findOne({ owner: id });
-    res.json(data);
   } catch (e) {
     res.status(500).json({ message: "Something went wrong, please try again" });
   }
