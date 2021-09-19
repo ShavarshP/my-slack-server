@@ -11,12 +11,13 @@ const chatIo = (io) => {
   const rooms = new Map();
   const chat = {};
   io.on("connection", (socket) => {
-    socket.on("ROOM:CHAT", ({ msg, email, id }) => {
+    socket.on("ROOM:CHAT", ({ msg, data, id }) => {
       try {
         if (id) {
-          chat[email] = id;
+          chat[data] = id;
         } else {
-          const emails = JSON.parse(email);
+          const newdata = JSON.parse(data);
+          const emails = newdata.filter((item, index) => index !== 0);
           emails.forEach(async (element) => {
             const candidate = await ChatUser.findOne({
               email: element,
@@ -26,12 +27,19 @@ const chatIo = (io) => {
             let newChatId = chatarr.map((item) => {
               if (isSimilar(item.emails, emails)) {
                 payman = false;
-                return { emails: item.emails, msg: [...item.msg, msg] };
+                return {
+                  options: item.options,
+                  emails: item.emails,
+                  msg: [...item.msg, msg],
+                };
               }
               return item;
             });
             if (payman) {
-              newChatId = [...newChatId, { emails: emails, msg: [msg] }];
+              newChatId = [
+                ...newChatId,
+                { options: newdata[0], emails: emails, msg: [msg] },
+              ];
             }
             await ChatUser.updateOne(
               { email: element },
