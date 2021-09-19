@@ -11,14 +11,14 @@ const chatIo = (io) => {
   const rooms = new Map();
   const chat = {};
   io.on("connection", (socket) => {
-    socket.on("ROOM:CHAT", ({ msg, data, id }) => {
+    socket.on("ROOM:CHAT", async ({ msg, email, id }) => {
       try {
         if (id) {
-          chat[data] = id;
+          chat[email] = id;
         } else {
-          const newdata = JSON.parse(data);
+          const newdata = JSON.parse(email);
           const emails = newdata.filter((item, index) => index !== 0);
-          emails.forEach(async (element) => {
+          await emails.forEach(async (element) => {
             const candidate = await ChatUser.findOne({
               email: element,
             });
@@ -45,8 +45,9 @@ const chatIo = (io) => {
               { email: element },
               { chatId: JSON.stringify(newChatId) }
             );
-            await socket.to(chat[element]).emit("ROOM:CHAT", msg);
+            await socket.to(chat[element]).emit("ROOM:CHAT", true);
           });
+          await socket.emit("ROOM:CHAT", true);
         }
       } catch (error) {}
     });
