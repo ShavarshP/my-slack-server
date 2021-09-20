@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
 const ChatUser = require("../models/ChatUser");
+const UserPhoto = require("../models/UserPhoto");
 const router = Router();
 const { LoginSchema } = require("../validationSchema/schema");
 const { AuthSchema } = require("../validationSchema/schema");
@@ -67,7 +68,12 @@ router.post("/register", async (req, res) => {
       password: hashedPassword,
     });
 
+    const userPhoto = new UserPhoto({
+      email,
+    });
+
     await user.save();
+    await userPhoto.save();
 
     const idUser = await User.findOne({ email });
 
