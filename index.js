@@ -30,6 +30,7 @@ app.use(
 
 app.use("/api", require("./routes/authRoutes"));
 app.use("/api", require("./routes/getUsersData"));
+app.use("/api", require("./routes/userPhoto"));
 
 chatIo(io);
 
