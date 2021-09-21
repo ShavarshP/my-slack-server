@@ -4,7 +4,7 @@ const ChatUser = require("../models/ChatUser");
 const auth = require("../middleware/auth.middleware");
 const router = Router();
 
-router.post("/save_photo", async (req, res) => {
+router.post("/save_photo", auth, async (req, res) => {
   try {
     const { email, photo } = req.body;
     await UserPhoto.updateOne(
